@@ -41,20 +41,23 @@ catalog = [
 
 
 # Rate limiting middleware
+
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
+
     if request.method == "OPTIONS":
         return await call_next(request)
+
     client_id = request.headers.get("X-Client-Id")
 
-if not client_id:
-    return await call_next(request)
+    if not client_id:
+        return await call_next(request)
+
     now = time.monotonic()
 
     with storage_lock:
         timestamps = client_requests[client_id]
 
-        # Remove requests older than 10 seconds
         while timestamps and now - timestamps[0] >= WINDOW_SECONDS:
             timestamps.popleft()
 
@@ -63,6 +66,7 @@ if not client_id:
                 1,
                 math.ceil(WINDOW_SECONDS - (now - timestamps[0]))
             )
+
             return JSONResponse(
                 status_code=429,
                 content={"detail": "Rate limit exceeded"},
@@ -72,6 +76,9 @@ if not client_id:
         timestamps.append(now)
 
     return await call_next(request)
+
+
+    
 
 
 # Accept any JSON order details
