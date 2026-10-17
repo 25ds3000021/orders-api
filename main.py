@@ -70,8 +70,12 @@ async def rate_limit_middleware(request: Request, call_next):
             return JSONResponse(
                 status_code=429,
                 content={"detail": "Rate limit exceeded"},
-                headers={"Retry-After": str(retry_after)}
-            )
+                headers={
+                    "Retry-After": str(retry_after),
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Expose-Headers": "Retry-After"
+                }
+)
 
         timestamps.append(now)
 
