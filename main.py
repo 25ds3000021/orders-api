@@ -45,7 +45,10 @@ catalog = [
 async def rate_limit_middleware(request: Request, call_next):
     if request.method == "OPTIONS":
         return await call_next(request)
-    client_id = request.headers.get("X-Client-Id", "default")
+    client_id = request.headers.get("X-Client-Id")
+
+if not client_id:
+    return await call_next(request)
     now = time.monotonic()
 
     with storage_lock:
